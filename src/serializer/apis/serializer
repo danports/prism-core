@@ -1,0 +1,27 @@
+function readFile(path)
+	local file = fs.open(path, "r")
+	if file == nil then
+		return nil
+	end
+	local contents = file.readAll()
+	file.close()
+	return contents
+end
+
+function readFromFile(path)
+	local file = readFile(path)
+	if file == nil then
+		return {}
+	end
+	return textutils.unserialize(file)
+end
+
+function writeFile(path, contents)
+	local file = fs.open(path, "w")
+	file.writeLine(contents)
+	file.close()
+end
+
+function writeToFile(path, contents)
+	writeFile(path, textutils.serialize(contents))
+end
