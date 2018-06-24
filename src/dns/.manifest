@@ -1,0 +1,4 @@
+{
+	description = "Simple API for hosting network protocols and resolving URLs to computer IDs"
+	dependencies = {{name = "util"}}
+}
