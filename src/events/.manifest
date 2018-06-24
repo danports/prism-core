@@ -1,0 +1,4 @@
+{
+	description = "API to register event handlers, run a message loop, and dispatch events",
+	dependencies = {{name = "util"}}
+}
