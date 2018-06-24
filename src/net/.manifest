@@ -1,0 +1,8 @@
+{
+	description = "Simple network API that handles sending messages and dispatching incoming messages",
+	dependencies = {
+		{name = "events"},
+		{name = "util"},
+		{name = "dns"}
+	}
+}
