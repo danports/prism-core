@@ -1,0 +1,8 @@
+{
+	description = "Provides a network interface for modifying a graph",
+	dependencies = {
+		{name = "net"},
+		{name = "serializer"},
+		{name = "graph"}
+	}
+}
