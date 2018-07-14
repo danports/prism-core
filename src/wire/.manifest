@@ -1,0 +1,3 @@
+{
+	description = "API that provides a common interface for handling different types of redstone signals"
+}
