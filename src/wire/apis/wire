@@ -5,12 +5,13 @@ function setOutput(id, state)
 	if id.wire == nil then
 		redstone.setOutput(id.side, state)
 	else
+		local signal = redstone.getBundledOutput(id.side)
 		if state then
-			redstone.setBundledOutput(id.side, id.wire)
+			signal = colors.combine(signal, id.wire)
 		else
-			-- TODO: Not technically correct.
-			redstone.setBundledOutput(id.side, 0)
+			signal = colors.subtract(signal, id.wire)
 		end
+		redstone.setBundledOutput(id.side, signal)
 	end
 end
 
