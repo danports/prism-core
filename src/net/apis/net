@@ -28,7 +28,7 @@ end
 function sendRawMessage(destination, msg)
 	local address = dns.resolve(destination)
 	if address == nil then
-		error(string.format("Unable to resolve %s", tostring(destination)))
+		return false, string.format("Unable to resolve %s", tostring(destination))
 	end
 	return rednet.send(address, msg)
 end
