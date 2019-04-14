@@ -14,7 +14,9 @@ function resolve(url)
 			hostname = nil
 		end
 		entry = {rednet.lookup(protocol, hostname)}
-		cache[url] = entry
+		if next(entry) then
+			cache[url] = entry
+		end
 	end
 	return unpack(entry)
 end
