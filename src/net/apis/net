@@ -2,8 +2,6 @@ os.loadAPI("apis/events")
 os.loadAPI("apis/util")
 os.loadAPI("apis/dns")
 
-local state = util.initializeGlobalTable("net.state")
-
 -- Modems
 function detectModem()
 	local sides = peripheral.getNames()
@@ -27,38 +25,12 @@ function openModem(side)
 end
 
 -- Message delivery
-function sendCore(destination, msg)
+function sendRawMessage(destination, msg)
 	local address = dns.resolve(destination)
 	if address == nil then
 		return false
 	end
 	return rednet.send(address, msg)
-end
-
-function deliverStartupQueue()
-	for _, queuedMsg in ipairs(state.deliveryQueue) do
-		sendCore(unpack(queuedMsg))
-	end
-	state.started = true
-	state.deliveryQueue = nil
-end
-
-function sendRawMessage(destination, msg)
-	if state.started then
-		return sendCore(destination, msg)
-	end
-	-- Slow start algorithm to avoid overloading busy computers when the server is starting up.
-	if os.clock() > 20 then
-		state.started = true
-		return sendCore(destination, msg)
-	end
-	if state.deliveryQueue then
-		table.insert(state.deliveryQueue, {destination, msg})
-		return true
-	end
-	state.deliveryQueue = {{destination, msg}}
-	events.setTimer(math.random(10) + 5, deliverStartupQueue)
-	return true
 end
 
 function createMessage(msgType, data)
