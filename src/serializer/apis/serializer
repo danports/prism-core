@@ -18,6 +18,9 @@ end
 
 function writeFile(path, contents)
 	local file = fs.open(path, "w")
+	if file == nil then
+		error(string.format("Failed to open %s for writing; is the file marked read-only?", path))
+	end
 	file.writeLine(contents)
 	file.close()
 end
