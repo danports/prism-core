@@ -1,0 +1,8 @@
+{
+	description = "Simple API to manage a job priority queue",
+	dependencies = {
+		{name = "serializer"},
+		{name = "util"},
+		{name = "events"}
+	}
+}
