@@ -1,0 +1,7 @@
+{
+	description = "Simple API for publishing and subscribing to messages",
+	dependencies = {
+		{name = "net"},
+		{name = "serializer"}
+	}
+}
