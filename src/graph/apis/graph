@@ -28,10 +28,11 @@ function getClosestUnvisitedNode(pathData)
 	return minNode
 end
 
-function shortestPath(nodes, route)
+function shortestPath(nodes, route, edgeWeight)
 	if nodes[route.origin] == nil then
 		return nil
 	end
+	edgeWeight = edgeWeight or function() return 1 end
 	
 	local pathData = {}
 	for k, _ in pairs(nodes) do
@@ -45,10 +46,11 @@ function shortestPath(nodes, route)
 	pathData[route.origin].distance = 0
 	local current = route.origin
 	while true do
-		local currentDist = pathData[current].distance
+		local currentDistance = pathData[current].distance
 		for k, edge in pairs(getUnvisitedEdgesOf(nodes, pathData, current)) do
-			if (currentDist + 1 < pathData[edge.destination].distance) then
-				pathData[edge.destination].distance = currentDist + 1
+			local newDistance = currentDistance + edgeWeight(edge)
+			if (newDistance < pathData[edge.destination].distance) then
+				pathData[edge.destination].distance = newDistance
 				pathData[edge.destination].edgeUsed = edge
 				pathData[edge.destination].previousNode = current
 			end
