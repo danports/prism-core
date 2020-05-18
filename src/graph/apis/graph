@@ -1,6 +1,6 @@
-function formatPath(origin, path)
-	local result = origin
-	for k, v in ipairs(path) do
+function formatPath(path)
+	local result = path.origin
+	for k, v in ipairs(path.edges) do
 		result = result .. " == " .. tostring(v.weight) .. " ==> " .. v.edge.destination
 	end
 	return result
@@ -60,9 +60,13 @@ function shortestPath(nodes, route, edgeWeight)
 		end
 		pathData[current].visited = true
 		if (current == route.destination) then
-			local path = {}
-			while current ~= origin do
-				table.insert(path, 1, {
+			local path = {
+				origin = route.origin,
+				destination = route.destination,
+				edges = {}
+			}
+			while current ~= route.origin do
+				table.insert(path.edges, 1, {
 					edge = pathData[current].edgeUsed,
 					weight = pathData[current].weight
 				})
