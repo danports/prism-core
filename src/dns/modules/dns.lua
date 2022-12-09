@@ -1,8 +1,9 @@
-os.loadAPI("apis/util")
+local util = require("util")
+local dns = {}
 
 local cache = util.initializeGlobalTable("dnsCache")
 
-function resolve(url)
+function dns.resolve(url)
 	local id = tonumber(url)
 	if id ~= nil then
 		return id
@@ -21,7 +22,7 @@ function resolve(url)
 	return unpack(entry)
 end
 
-function getHostname()
+function dns.getHostname()
 	local hostname = os.getComputerLabel()
 	if hostname == nil then
 		hostname = tostring(os.computerID())
@@ -29,9 +30,9 @@ function getHostname()
 	return hostname
 end
 
-function register(protocol, hostname)
+function dns.register(protocol, hostname)
 	if hostname == nil then
-		hostname = getHostname()
+		hostname = dns.getHostname()
 	end
 	rednet.host(protocol, hostname)
 end
