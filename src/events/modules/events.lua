@@ -1,18 +1,19 @@
-os.loadAPI("apis/util")
+local util = require("util")
+local events = {}
 
 local eventHandlers = util.initializeGlobalTable("eventHandlers")
 
-function registerHandler(eventType, handler)
+function events.registerHandler(eventType, handler)
 	eventHandlers[eventType] = handler
 end
 
-function registerLocalHandler(eventType, handler)
+function events.registerLocalHandler(eventType, handler)
 	util.getCoroutineTable("eventHandlers")[eventType] = handler
 end
 
 local timerHandlers = util.initializeGlobalTable("timerHandlers")
 
-function handleTimer(evt, timer)
+function events.handleTimer(evt, timer)
 	local handler = timerHandlers[timer]
 	if handler == nil then
 		return
@@ -21,16 +22,16 @@ function handleTimer(evt, timer)
 	return handler(timer)
 end
 
-function setTimer(timeout, handler)
+function events.setTimer(timeout, handler)
 	local id = os.startTimer(timeout)
 	timerHandlers[id] = handler
 	return id
 end
 
-registerHandler("timer", handleTimer)
-registerHandler("terminate", function() return false end)
+events.registerHandler("timer", events.handleTimer)
+events.registerHandler("terminate", function() return false end)
 
-function getEventHandler(eventType)
+function events.getEventHandler(eventType)
 	local handler = util.getCoroutineTable("eventHandlers")[eventType]
 	if handler == nil then
 		handler = eventHandlers[eventType]
@@ -38,8 +39,8 @@ function getEventHandler(eventType)
 	return handler
 end
 
-function dispatchMessage(eventType, ...)
-	local handler = getEventHandler(eventType)
+function events.dispatchMessage(eventType, ...)
+	local handler = events.getEventHandler(eventType)
 	if handler == nil then
 		return
 	end
@@ -48,7 +49,7 @@ function dispatchMessage(eventType, ...)
 	end
 end
 
-function runMessageLoop()
+function events.runMessageLoop()
 	while true do
 		if dispatchMessage(os.pullEvent()) == false then
 			return
@@ -56,7 +57,7 @@ function runMessageLoop()
 	end
 end
 
-function runParallelMessageLoop()
+function events.runParallelMessageLoop()
 	local routines = {}
     local filters = {}
     while true do
@@ -94,3 +95,5 @@ function runParallelMessageLoop()
     	end
     end
 end
+
+return events
