@@ -1,5 +1,6 @@
-os.loadAPI("apis/net")
-os.loadAPI("apis/dns")
+local net = require("net")
+local dns = require("dns")
+local log = {}
 
 -- TODO: Refactor with multiple log appenders - console and network
 -- TODO: Add dependencies on net, dns
@@ -7,7 +8,7 @@ os.loadAPI("apis/dns")
 local hasResolvedServer = false
 local server
 
-function sendToServer(level, text)
+function log.log.sendToServer(level, text)
 	if not hasResolvedServer then
 		server = dns.resolve("log://")
 		hasResolvedServer = true
@@ -22,33 +23,35 @@ function sendToServer(level, text)
 	}})
 end
 
-function debug(text)
+function log.debug(text)
 	if isDebugEnabled then
 		print(text)
 	end
 end
 
-function info(text)
-	sendToServer("info", text)
+function log.info(text)
+	log.sendToServer("info", text)
 	print(text)
 end
 
-function warn(text)
-	sendToServer("warn", text)
+function log.warn(text)
+	log.sendToServer("warn", text)
 	print("WARN: " .. text)
 end
 
-function err(text)
-	sendToServer("error", text)
+function log.err(text)
+	log.sendToServer("error", text)
 	print("ERROR: " .. text)
 end
 
-function fatal(text)
-	sendToServer("fatal", text)
+function log.fatal(text)
+	log.sendToServer("fatal", text)
 	print("FATAL: " .. text)
 end
 
-function panic(text)
-	fatal(text)
+function log.panic(text)
+	log.fatal(text)
 	error(text, 2)
 end
+
+return log
