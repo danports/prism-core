@@ -1,14 +1,16 @@
+local util = {}
+
 -- The problem is that we call os.loadAPI multiple times, and CC loads and overwrites the API every time.
 -- We can either stash API variables in a global table like this or patch CC to load each API once.
-function initializeGlobalTable(name)
-	return getTable(_G, name)
+function util.initializeGlobalTable(name)
+	return util.getTable(_G, name)
 end
 
-function getCoroutineTable(name)
-	return getTable(getTable(initializeGlobalTable("coroutineStorage"), coroutine.running()), name)
+function util.getCoroutineTable(name)
+	return util.getTable(getTable(initializeGlobalTable("coroutineStorage"), coroutine.running()), name)
 end
 
-function getTable(obj, key)
+function util.getTable(obj, key)
 	local value = obj[key]
 	if value == nil then
 		value = {}
@@ -17,7 +19,7 @@ function getTable(obj, key)
 	return value
 end
 
-function getNextUnusedIndex(obj)
+function util.getNextUnusedIndex(obj)
 	local id = 1
 	while obj[id] ~= nil do
 		id = id + 1
@@ -25,13 +27,13 @@ function getNextUnusedIndex(obj)
 	return id
 end
 
-function insertRange(obj, items)
+function util.insertRange(obj, items)
 	for _, item in pairs(items) do
 		table.insert(obj, item)
 	end
 end
 
-function removeWhere(obj, test)
+function util.removeWhere(obj, test)
 	local position = 1
 	while position <= #obj do
 		if test(obj[position]) then
@@ -42,13 +44,15 @@ function removeWhere(obj, test)
 	end
 end
 
-function deepClone(obj)
+function util.deepClone(obj)
 	if type(obj) ~= "table" then
 		return obj
 	end
 	local clone = {}
 	for k, v in pairs(obj) do
-		clone[k] = deepClone(v)
+		clone[k] = util.deepClone(v)
 	end
 	return clone
 end
+
+return util
