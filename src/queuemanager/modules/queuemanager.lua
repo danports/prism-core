@@ -3,54 +3,54 @@
 -- onFormatJob: function that takes a job and returns a formatted version of it. [optional]
 -- onBeginJob: function that takes a job and starts running it.
 
-os.loadAPI("apis/serializer")
-os.loadAPI("apis/util")
-os.loadAPI("apis/events")
+local serializer = require("serializer")
+local util = require("util")
+local queuemanager = {}
 
 local currentJob
 local handlers = {}
 
-function getCurrentJob()
+function queuemanager.getCurrentJob()
 	return currentJob
 end
 
-function getQueue()
+function queuemanager.getQueue()
 	return queue
 end
 
-function setHandler(name, handler)
+function queuemanager.setHandler(name, handler)
 	handlers[name] = handler
 end
 
-function isJobRunnable(job)
+function queuemanager.isJobRunnable(job)
 	return handlers.onIsJobRunnable == nil or handlers.onIsJobRunnable(job)
 end
 
-function formatJob(job)
+function queuemanager.formatJob(job)
 	if handlers.onFormatJob == nil then
 		return textutils.serialize(job)
 	end
 	return handlers.onFormatJob(job)
 end
 
-function finishJob()
-	print(string.format("Job completed: %s", formatJob(currentJob)))
+function queuemanager.finishJob()
+	print(string.format("Job completed: %s", queuemanager.formatJob(currentJob)))
 	currentJob = nil
 	fs.delete("currentJob")
-	startQueue()
+	queuemanager.startQueue()
 end
 
-function dequeueNextRunnableJob()
+function queuemanager.dequeueNextRunnableJob()
 	local highestPriority
 	local index
 	for i, job in ipairs(queue) do
-		if isJobRunnable(job) and (index == nil or (job.priority ~= nil and 
+		if queuemanager.isJobRunnable(job) and (index == nil or (job.priority ~= nil and 
 			(highestPriority == nil or job.priority > highestPriority))) then
 			highestPriority = job.priority
 			index = i
 		end
 	end
-	
+
 	if index == nil then
 		return nil
 	end
@@ -59,51 +59,53 @@ function dequeueNextRunnableJob()
 	return job
 end
 
-function currentJobUpdated()
+function queuemanager.currentJobUpdated()
 	serializer.writeToFile("currentJob", currentJob)
 end
 
-function startQueue()
+function queuemanager.startQueue()
 	if currentJob ~= nil then
 		return
 	end
-	currentJob = dequeueNextRunnableJob()
+	currentJob = queuemanager.dequeueNextRunnableJob()
 	if currentJob == nil then
 		return
 	end
-	beginJob(currentJob)
-	currentJobUpdated()
+	queuemanager.beginJob(currentJob)
+	queuemanager.currentJobUpdated()
 end
 
-function onStartup()
+function queuemanager.onStartup()
 	queue = serializer.readFromFile("queue")
 	if fs.exists("currentJob") then
 		currentJob = serializer.readFromFile("currentJob")
 	end
-	startQueue()
+	queuemanager.startQueue()
 end
 
-function beginJob(job)
+function queuemanager.beginJob(job)
 	if handlers.onBeginJob == nil then
 		print("ERROR: onBeginJob handler not defined")
 		return
 	end
-	print(string.format("Starting job: %s", formatJob(job)))
+	print(string.format("Starting job: %s", queuemanager.formatJob(job)))
 	handlers.onBeginJob(job)
 end
 
-function queueJob(job)
-	insertJob(job)
-	startQueue()
+function queuemanager.queueJob(job)
+	queuemanager.insertJob(job)
+	queuemanager.startQueue()
 end
 
-function cancelJobs(test)
+function queuemanager.cancelJobs(test)
 	util.removeWhere(queue, test)
 	serializer.writeToFile("queue", queue)
 end
 
-function insertJob(job)
-	print(string.format("Queueing job: %s", formatJob(job)))
+function queuemanager.insertJob(job)
+	print(string.format("Queueing job: %s", queuemanager.formatJob(job)))
 	table.insert(queue, job)
 	serializer.writeToFile("queue", queue)
 end
+
+return queuemanager
