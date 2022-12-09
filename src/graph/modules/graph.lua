@@ -1,4 +1,6 @@
-function formatPath(path)
+local graph = {}
+
+function graph.formatPath(path)
 	local result = path.origin
 	for k, v in ipairs(path.edges) do
 		result = result .. " == " .. tostring(v.weight) .. " ==> " .. v.edge.destination
@@ -6,7 +8,7 @@ function formatPath(path)
 	return result
 end
 
-function getUnvisitedEdgesOf(nodes, pathData, current)
+function graph.getUnvisitedEdgesOf(nodes, pathData, current)
 	local result = {}
 	for k, edge in pairs(nodes[current].edges) do
 		if not pathData[edge.destination].visited then
@@ -16,7 +18,7 @@ function getUnvisitedEdgesOf(nodes, pathData, current)
 	return result
 end
 
-function getClosestUnvisitedNode(pathData)
+function graph.getClosestUnvisitedNode(pathData)
 	local minDistance = math.huge
 	local minNode = nil
 	for k, v in pairs(pathData) do
@@ -28,7 +30,7 @@ function getClosestUnvisitedNode(pathData)
 	return minNode
 end
 
-function shortestPath(nodes, route, edgeWeight)
+function graph.shortestPath(nodes, route, edgeWeight)
 	if nodes[route.origin] == nil then
 		return nil
 	end
@@ -81,26 +83,26 @@ function shortestPath(nodes, route, edgeWeight)
 	end
 end
 
-function checkNode(graph, node)
+function graph.checkNode(graph, node)
 	if graph[node] == nil then
 		graph[node] = {edges = {}}
 	end
 end
 
-function insertNode(graph, node, contents)
+function graph.insertNode(graph, node, contents)
 	if contents.edges == nil then
 		contents.edges = {}
 	end
 	graph[node] = contents
 end
 
-function insertEdge(graph, node, edge)
+function graph.insertEdge(graph, node, edge)
 	checkNode(graph, node)
 	checkNode(graph, edge.destination)
 	table.insert(graph[node].edges, edge)
 end
 
-function deleteEdge(graph, origin, destination)
+function graph.deleteEdge(graph, origin, destination)
 	if graph[origin] == nil then
 		return nil
 	end
@@ -113,13 +115,13 @@ function deleteEdge(graph, origin, destination)
 	return nil
 end
 
-function deleteNode(graph, node)
+function graph.deleteNode(graph, node)
 	local toDelete = graph[node]
 	graph[node] = nil
 	return toDelete
 end
 
-function updateEdge(graph, origin, destination, newDestination)
+function graph.updateEdge(graph, origin, destination, newDestination)
 	if graph[origin] == nil then
 		return nil
 	end
@@ -131,3 +133,5 @@ function updateEdge(graph, origin, destination, newDestination)
 	end
 	return nil
 end
+
+return graph

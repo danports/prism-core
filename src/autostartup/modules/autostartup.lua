@@ -10,7 +10,7 @@ end
 
 function dependenciesSatisfied(dependencies)
 	for _, dependency in pairs(dependencies) do
-		if not dependencySatisfied(dependency) then
+		if not autostartup.dependencySatisfied(dependency) then
 			return false
 		end
 	end
