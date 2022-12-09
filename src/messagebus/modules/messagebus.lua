@@ -1,29 +1,30 @@
-os.loadAPI("apis/net")
-os.loadAPI("apis/serializer")
+local net = require("net")
+local serializer = require("serializer")
+local messagebus = {}
 
 local subscriptions
 
-function getSubscribersFor(msgType)
-	local subscribers = subscriptions[msgType]	
+function messagebus.messagebus.getSubscribersFor(msgType)
+	local subscribers = subscriptions[msgType]
 	if subscribers == nil then
 		return {}
 	end
 	return subscribers
 end
 
-function publish(msgType, msg)
-	for _, subscriber in pairs(getSubscribersFor(msgType)) do
+function messagebus.publish(msgType, msg)
+	for _, subscriber in pairs(messagebus.getSubscribersFor(msgType)) do
 		net.sendMessage(subscriber.computerId, msgType, msg)
 	end
 end
 
-function subscribe(target, msgType)
+function messagebus.subscribe(target, msgType)
 	net.sendMessage(target, "subscribe", {computerId = os.computerID(), 
 		messageType = msgType})
 end
 
-function findSubscription(subscription)
-	for _, subscriber in pairs(getSubscribersFor(subscription.messageType)) do
+function messagebus.findSubscription(subscription)
+	for _, subscriber in pairs(messagebus.getSubscribersFor(subscription.messageType)) do
 		if subscriber.computerId == subscription.computerId then
 			return subscriber
 		end
@@ -31,22 +32,24 @@ function findSubscription(subscription)
 	return nil
 end
 
-function addSubscription(subscription)
+function messagebus.addSubscription(subscription)
 	-- TODO: Option to add a subscription and also send an initial update.
 	-- Maybe that should be considered a different type of subscription?
-	local existing = findSubscription(subscription)
+	local existing = messagebus.findSubscription(subscription)
 	if existing ~= nil then
 		return
 	end
 	print(string.format("Adding %i as subscriber for %s", subscription.computerId,
 		subscription.messageType))
-	local subscribers = getSubscribersFor(subscription.messageType)
+	local subscribers = messagebus.getSubscribersFor(subscription.messageType)
 	table.insert(subscribers, subscription)
 	subscriptions[subscription.messageType] = subscribers
 	serializer.writeToFile("subscriptions", subscriptions)
 end
 
-function onStartup()
-	net.registerMessageHandler("subscribe", addSubscription)
+function messagebus.onStartup()
+	net.registerMessageHandler("subscribe", messagebus.addSubscription)
 	subscriptions = serializer.readFromFile("subscriptions")
 end
+
+return messagebus
