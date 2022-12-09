@@ -1,6 +1,8 @@
-os.loadAPI("apis/dns")
+local dns = require("dns")
 
-function dependencySatisfied(dependency)
+local autostartup = {}
+
+function autostartup.dependencySatisfied(dependency)
 	if dependency.type == "dns" then
 		return dns.resolve(dependency.address)
 	else
@@ -8,7 +10,7 @@ function dependencySatisfied(dependency)
 	end
 end
 
-function dependenciesSatisfied(dependencies)
+function autostartup.dependenciesSatisfied(dependencies)
 	for _, dependency in pairs(dependencies) do
 		if not autostartup.dependencySatisfied(dependency) then
 			return false
@@ -17,8 +19,10 @@ function dependenciesSatisfied(dependencies)
 	return true
 end
 
-function waitForDependencies(dependencies)
+function autostartup.waitForDependencies(dependencies)
 	repeat
 		os.sleep(math.random(5) + 5)
-	until dependenciesSatisfied(dependencies)
+	until autostartup.dependenciesSatisfied(dependencies)
 end
+
+return autostartup
