@@ -1,4 +1,6 @@
-function readFile(path)
+local serializer = {}
+
+function serializer.readFile(path)
 	local file = fs.open(path, "r")
 	if file == nil then
 		return nil
@@ -8,15 +10,15 @@ function readFile(path)
 	return contents
 end
 
-function readFromFile(path)
-	local file = readFile(path)
+function serializer.readFromFile(path)
+	local file = serializer.readFile(path)
 	if file == nil then
 		return {}
 	end
 	return textutils.unserialize(file)
 end
 
-function writeFile(path, contents)
+function serializer.writeFile(path, contents)
 	local file = fs.open(path, "w")
 	if file == nil then
 		error(string.format("Failed to open %s for writing; is the file marked read-only?", path))
@@ -25,6 +27,8 @@ function writeFile(path, contents)
 	file.close()
 end
 
-function writeToFile(path, contents)
-	writeFile(path, textutils.serialize(contents))
+function serializer.writeToFile(path, contents)
+	serializer.writeFile(path, textutils.serialize(contents))
 end
+
+return serializer
