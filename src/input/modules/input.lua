@@ -1,4 +1,6 @@
-function request(params)
+local input = {}
+
+function input.request(params)
 	while true do
 		if params.prompt then
 			print(params.prompt)
@@ -24,12 +26,12 @@ function request(params)
 	end
 end
 
-function menu(params)
+function input.menu(params)
 	print(params.prompt)
 	for id, item in ipairs(params.items) do
 		print(string.format("[%i] %s", id, params.formatter(item)))
 	end
-	return request({
+	return input.request({
 		validator = function(data)
 			local id = tonumber(data)
 			if id == nil then
