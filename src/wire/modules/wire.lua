@@ -1,4 +1,6 @@
-function setOutput(id, state)
+local wire = {}
+
+function wire.setOutput(id, state)
 	if id.invert then
 		state = not state
 	end
@@ -15,7 +17,7 @@ function setOutput(id, state)
 	end
 end
 
-function getInput(id)
+function wire.getInput(id)
 	local state
 	if id.wire == nil then
 		state = redstone.getInput(id.side)
@@ -28,10 +30,12 @@ function getInput(id)
 	return state
 end
 
-function format(id)
+function wire.format(id)
 	if id.wire == nil then
 		return id.side
 	else
 		return string.format("%s:%i", id.side, id.wire)
 	end
 end
+
+return wire
