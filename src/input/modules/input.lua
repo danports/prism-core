@@ -42,3 +42,5 @@ function input.menu(params)
 		invalidPrompt = "Please enter the number of one of the items above."
 	})
 end
+
+return input
