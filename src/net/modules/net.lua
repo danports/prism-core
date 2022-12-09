@@ -1,9 +1,10 @@
-os.loadAPI("apis/events")
-os.loadAPI("apis/util")
-os.loadAPI("apis/dns")
+local events = require("events")
+local util = require("util")
+local dns = require("dns")
+local net = {}
 
 -- Modems
-function detectModem()
+function net.detectModem()
 	local sides = peripheral.getNames()
 	for _, side in ipairs(sides) do
 		if peripheral.getType(side) == "modem" and peripheral.call(side, "isWireless") then
@@ -13,9 +14,9 @@ function detectModem()
 	return nil
 end
 
-function openModem(side)
+function net.openModem(side)
 	if side == nil then
-		side = detectModem()
+		side = net.detectModem()
 		if side == nil then
 			error("Unable to automatically detect modem -- did you attach one?")
 		end
@@ -25,7 +26,7 @@ function openModem(side)
 end
 
 -- Message delivery
-function sendRawMessage(destination, msg)
+function net.sendRawMessage(destination, msg)
 	local address = dns.resolve(destination)
 	if address == nil then
 		return false, string.format("Unable to resolve %s", tostring(destination))
@@ -33,29 +34,29 @@ function sendRawMessage(destination, msg)
 	return rednet.send(address, msg)
 end
 
-function createMessage(msgType, data)
+function net.createMessage(msgType, data)
 	return {msgType, data}
 end
 
-function sendMessage(destination, msgType, data)
-	return sendRawMessage(destination, createMessage(msgType, data))
+function net.sendMessage(destination, msgType, data)
+	return net.sendRawMessage(destination, net.createMessage(msgType, data))
 end
 
-function sendMessages(destination, messages)
-	return sendRawMessage(destination, messages)
+function net.sendMessages(destination, messages)
+	return net.sendRawMessage(destination, messages)
 end
 
-function broadcastMessage(destination, msgType, data)
+function net.broadcastMessage(destination, msgType, data)
 	local recipients = {dns.resolve(destination)}
 	for _, recipient in ipairs(recipients) do
-		sendMessage(recipient, msgType, data)
+		net.sendMessage(recipient, msgType, data)
 	end
 end
 
 -- Message handlers
 local rednetHandlers = util.initializeGlobalTable("rednetHandlers")
 
-function pullMessage(msgType)
+function net.pullMessage(msgType)
 	-- TODO: Better to implement this with protocols, which weren't supported when this library was first written.
 	while true do
 		local senderId, msg = rednet.receive()
@@ -65,31 +66,31 @@ function pullMessage(msgType)
 	end
 end
 
-function registerRawMessageHandler(msgType, handler)
+function net.registerRawMessageHandler(msgType, handler)
 	rednetHandlers[msgType] = handler
 end
 
-function registerRawLocalMessageHandler(msgType, handler)
+function net.registerRawLocalMessageHandler(msgType, handler)
 	util.getCoroutineTable("rednetHandlers")[msgType] = handler
 end
 
-function registerMessageHandler(msgType, handler)
-	registerRawMessageHandler(msgType, function(data) return handler(data[2]) end)
+function net.registerMessageHandler(msgType, handler)
+	net.registerRawMessageHandler(msgType, function(data) return handler(data[2]) end)
 end
 
-function registerLocalMessageHandler(msgType, handler)
-	registerRawLocalMessageHandler(msgType, function(data) return handler(data[2]) end)
+function net.registerLocalMessageHandler(msgType, handler)
+	net.registerRawLocalMessageHandler(msgType, function(data) return handler(data[2]) end)
 end
 
-function removeHandler(msgType)
+function net.removeHandler(msgType)
 	rednetHandlers[msgType] = nil
 end
 
-function removeLocalHandler(msgType)
+function net.removeLocalHandler(msgType)
 	util.getCoroutineTable("rednetHandlers")[msgType] = nil
 end
 
-function getRednetHandler(msgType)
+function net.getRednetHandler(msgType)
 	local handler = util.getCoroutineTable("rednetHandlers")[msgType]
 	if handler == nil then
 		handler = rednetHandlers[msgType]
@@ -97,31 +98,33 @@ function getRednetHandler(msgType)
 	return handler
 end
 
-function dispatchMessage(msg, sender, distance)
-	local handler = getRednetHandler(msg[1])
+function net.dispatchMessage(msg, sender, distance)
+	local handler = net.getRednetHandler(msg[1])
 	if handler ~= nil then
 		return handler(msg, sender, distance)
 	end
 end
 
-function handleRednetMessage(msgType, sender, msg, distance)
+function net.handleRednetMessage(msgType, sender, msg, distance)
 	if msg == nil then
 		return
 	end
 	if type(msg[1]) == "table" then
 		for _, subMessage in ipairs(msg) do
-			if dispatchMessage(subMessage, sender, distance) == false then
+			if net.dispatchMessage(subMessage, sender, distance) == false then
 				return false
 			end
 		end
 	else
-		return dispatchMessage(msg, sender, distance)
+		return net.dispatchMessage(msg, sender, distance)
 	end
 end
 
-events.registerHandler("rednet_message", handleRednetMessage)
+events.registerHandler("rednet_message", net.handleRednetMessage)
 
-registerRawMessageHandler("ping", function(data, sender)
+net.registerRawMessageHandler("ping", function(data, sender)
 	print(string.format("Ping received; sending reply to %i", sender))
-	sendMessage(sender, "pingReply", {position = {gps.locate(5)}})
+	net.sendMessage(sender, "pingReply", {position = {gps.locate(5)}})
 end)
+
+return net
