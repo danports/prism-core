@@ -1,0 +1,3 @@
+{
+	description = "Execute all scripts in the /startup.d folder"
+}

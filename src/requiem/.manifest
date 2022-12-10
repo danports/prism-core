@@ -1,0 +1,4 @@
+{
+	description = "Bootstrap require() onto older versions of ComputerCraft"
+	dependencies = {{name = "startupmgr"}}
+}
