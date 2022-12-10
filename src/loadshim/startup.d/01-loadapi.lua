@@ -1,6 +1,6 @@
 package.path = package.path .. ";/modules/?;/modules/?.lua;/modules/?/init.lua"
 
-local old_loadapi = os.loadAPI()
+local old_loadapi = os.loadAPI
 
 --- Modified version of os.loadAPI() that tries require() first.
 -- @param path Full file path to the wanted API.
