@@ -1,0 +1,4 @@
+{
+	description = "Modify os.loadAPI() to try require() first on wanted APIs."
+	dependencies = {{name = "startupmgr"}}
+}

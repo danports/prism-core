@@ -1,0 +1,16 @@
+#!/usr/bin/env lua
+--- Startup.d: Portable startup directories
+
+local function startup(startup_dir)
+    local startup_dir = startup_dir or "/startup.d" -- use the specified folder if it provided, otherwise use default
+    for _, v in pairs(fs.list(startup_dir)) do
+        local file = fs.combine(startup_dir .. "/", v)
+        if fs.isDir(file) then -- Support directories with init.lua
+            dofile(fs.combine(file, "init.lua"))
+        else
+            loadfile(file)
+        end
+    end
+end
+
+startup()
